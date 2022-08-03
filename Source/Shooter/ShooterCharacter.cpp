@@ -28,7 +28,13 @@ AShooterCharacter::AShooterCharacter() :
 	CameraDefaultFOV(0.f), // Set in begin play
 	CameraZoomedFOV(35.f),
 	ZoomInterpSpeed(20.0f),
-	CameraCurrentFOV(0.f)
+	CameraCurrentFOV(0.f),
+	// Crosshair spread factors
+	CrosshairSpreadMultiplier(0.f),
+	CrosshairVelocityFactor(0.f),
+	CrosshairInAirFactor(0.f),
+	CrosshairAimFactor(0.f),
+	CrosshairShootingFactor(0.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -283,9 +289,39 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 	FVector Velocity{ GetVelocity() };
 	Velocity.Z = 0.f;
 
+	// Calculate crosshair velocity factor
 	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
 
-	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor;
+	// Calculate crosshair in air factor
+	if (GetCharacterMovement()->IsFalling())
+	{
+		// Spread the crosshairs slowly while in air
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
+	}
+	else
+	{
+		// Character is on the ground
+		// Shrink the crosshairs rapidly while on the ground
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
+	}
+
+	// Calculate crosshair if aiming
+	if (bAiming)
+	{
+		// Character aims in shrink the crosshairs rapidly
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.6f, DeltaTime, 30.f);
+	}
+	// Calculate crosshair while not aiming
+	else
+	{
+		// Character aims out expand the crosshairs rapidly
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+	}
+
+	CrosshairSpreadMultiplier = 0.5f + 
+		CrosshairVelocityFactor + 
+		CrosshairInAirFactor -
+		CrosshairAimFactor;
 }
 
 // Called every frame
@@ -297,6 +333,9 @@ void AShooterCharacter::Tick(float DeltaTime)
 	CameraInterpZoom(DeltaTime);
 
 	SetLookRates();
+
+	// Calculate crosshair spread multiplier
+	CalculateCrosshairSpread(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -322,5 +361,10 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAxis("Turn", this, &AShooterCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &AShooterCharacter::LookUp);
+}
+
+float AShooterCharacter::GetCrosshairSpreadMultiplier() const
+{
+	return CrosshairSpreadMultiplier;
 }
 
