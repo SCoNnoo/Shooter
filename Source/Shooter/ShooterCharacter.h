@@ -76,6 +76,9 @@ protected:
 	/** Line trace for items under the crosshairs */
 	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation);
 
+	/** Trace for items if overlapped item count > 0 */
+	void TraceForItems();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -208,6 +211,10 @@ private:
 
 	/** Number of overlapped Aitems */
 	int8 OverlappedItemCount;
+
+	/** The AItem we hit last frame*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	class AItem* TraceHitItemLastFrame;
 
 public:
 	/** Returns CameraBoom subobject */

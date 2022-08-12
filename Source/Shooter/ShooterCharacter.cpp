@@ -407,6 +407,43 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& 
 	return false;
 }
 
+void AShooterCharacter::TraceForItems()
+{
+	if (bShouldTraceForItems)
+	{
+		FHitResult ItemTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
+		if (ItemTraceResult.bBlockingHit)
+		{
+			AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if (HitItem && HitItem->GetPickupWidget())
+			{
+				// Show item's pickup widget
+				HitItem->GetPickupWidget()->SetVisibility(true);
+			}
+
+			// We hit an AItem last frame
+			if (TraceHitItemLastFrame)
+			{
+				if (HitItem != TraceHitItemLastFrame)
+				{
+					//We are hitting a different AItem this frame from last frame or AItem is null
+					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+				}
+			}
+
+			// Store a reference to hit item for next frame
+			TraceHitItemLastFrame = HitItem;
+		}
+	}
+	else if (TraceHitItemLastFrame)
+	{
+		// No longer overlapping any items, item last frame should not show widget
+		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+	}
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -419,19 +456,9 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 	// Calculate crosshair spread multiplier
 	CalculateCrosshairSpread(DeltaTime);
-
-	FHitResult ItemTraceResult;
-	FVector HitLocation;
-	TraceUnderCrosshairs(ItemTraceResult, HitLocation);
-	if (ItemTraceResult.bBlockingHit)
-	{
-		AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
-		if (HitItem && HitItem->GetPickupWidget())
-		{
-			// Show item's pickup widget
-			HitItem->GetPickupWidget()->SetVisibility(true);
-		}
-	}
+	
+	// check overlapped item count then trace for items
+	TraceForItems();
 }
 
 // Called to bind functionality to input
