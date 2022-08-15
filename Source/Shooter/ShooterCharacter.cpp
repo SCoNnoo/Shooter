@@ -12,6 +12,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Item.h"
 #include "Components/WidgetComponent.h"
+#include "Weapon.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter() :
@@ -84,6 +85,9 @@ void AShooterCharacter::BeginPlay()
 		CameraDefaultFOV = GetFollowCamera()->FieldOfView;
 		CameraCurrentFOV = CameraDefaultFOV;
 	}
+
+	// Spawn the default and attach it to the mesh
+	SpawnDefaultWeapon();
 	
 }
 
@@ -441,6 +445,25 @@ void AShooterCharacter::TraceForItems()
 	{
 		// No longer overlapping any items, item last frame should not show widget
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+	}
+}
+
+void AShooterCharacter::SpawnDefaultWeapon()
+{
+	// Check the TsubclassOf variable
+	if (DefaultWeaponClass)
+	{
+		// Spawn weapon
+		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+		// Get hand socket
+		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			// Attach weapon to the right hand socket
+			HandSocket->AttachActor(DefaultWeapon, GetMesh());
+		}
+		// Set equipped to the newly spawned weapon;
+		EquippedWeapon = DefaultWeapon;
 	}
 }
 

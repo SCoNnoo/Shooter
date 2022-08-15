@@ -10,7 +10,8 @@
 // Sets default values
 AItem::AItem():
 	ItemName(FString("Default")),
-	ItemCount(0)
+	ItemCount(0),
+	ItemRarity(EItemRarity::EIR_Common)
 {
 
 
@@ -38,8 +39,13 @@ void AItem::BeginPlay()
 	Super::BeginPlay();
 	
 	// Hide pickup widget
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(false);
+	}
 
-	PickupWidget->SetVisibility(false);
+	// Sets active stars array based on item rarity
+	SetActiveStars();
 
 	// Setup overlap for area sphere
 	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
@@ -67,6 +73,48 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		{
 			ShooterCharacter->IncrementOverllapedItemCount(-1);
 		}
+	}
+}
+
+void AItem::SetActiveStars()
+{
+	// The 0 element isn't used
+	for (int32 i = 0; i <= 5; i++)
+	{
+		ActiveStars.Add(false);
+	}
+
+	switch (ItemRarity)
+	{
+	case EItemRarity::EIR_Damaged:
+		ActiveStars[1] = true;
+		break;
+	case EItemRarity::EIR_Common:
+		ActiveStars[1] = true;
+		ActiveStars[2] = true;
+		break;
+	case EItemRarity::EIR_Uncommon:
+		ActiveStars[1] = true;
+		ActiveStars[2] = true;
+		ActiveStars[3] = true;
+		break;
+	case EItemRarity::EIR_Rare:
+		ActiveStars[1] = true;
+		ActiveStars[2] = true;
+		ActiveStars[3] = true;
+		ActiveStars[4] = true;
+		break;
+	case EItemRarity::EIR_Legendary:
+		ActiveStars[1] = true;
+		ActiveStars[2] = true;
+		ActiveStars[3] = true;
+		ActiveStars[4] = true;
+		ActiveStars[5] = true;
+		break;
+	case EItemRarity::EIR_Max:
+		break;
+	default:
+		break;
 	}
 }
 
