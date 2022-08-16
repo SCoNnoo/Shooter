@@ -17,6 +17,7 @@ enum class EItemRarity : uint8
 	EIR_Max UMETA(DisplayName = "DefaultMax")
 };
 
+UENUM(BlueprintType)
 enum class EItemState : uint8
 {
 	EIS_Pickup UMETA(DisplayName = "Pickup"),
@@ -51,6 +52,9 @@ protected:
 
 	/** Sets the active stars array of bool depends on rarity */
 	void SetActiveStars();
+
+	/** Sets properties of the items components based on state */
+	void SetItemProperties(EItemState State);
 
 public:	
 	// Called every frame
@@ -104,6 +108,8 @@ public:
 
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 
-	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }
+	void SetItemState(EItemState State);
+
+	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
 
 };
