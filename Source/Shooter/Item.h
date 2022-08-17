@@ -130,6 +130,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	class AShooterCharacter* Character;
 
+	/** X and Y for the item while interping in the equip interping state */
+	float ItemInterpX;
+	float ItemInterpY;
+
+	/** Initial yaw offset between the camera and the interping item */
+	float InterpInitialYawOffset;
+
+	/** Cruve used to scale the item when interping */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* ItemScaleCurve;
+
 
 public:
 
