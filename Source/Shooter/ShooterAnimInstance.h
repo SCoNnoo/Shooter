@@ -6,6 +6,18 @@
 #include "Animation/AnimInstance.h"
 #include "ShooterAnimInstance.generated.h"
 
+UENUM(BlueprintType)
+enum class EOffsetState : uint8
+{
+	EOS_Aiming UMETA(DisplayName = "Aiming"),
+	EOS_Hip UMETA(DisplayName = "Hip"),
+	EOS_reloading UMETA(DisplayName = "Reloading"),
+	EOS_InAir UMETA(DisplayName = "InAir"),
+
+
+	EOS_MAX UMETA(DisplayName = "DefaultMax")
+};
+
 /**
  * 
  */
@@ -25,6 +37,9 @@ public:
 
 	/** Handle turning in place variables */
 	void TurnInPlace();
+
+	/** Handle calculation for leaning while running */
+	void Lean(float DeltaTime);
 
 
 private:
@@ -55,11 +70,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool bAiming;
 
-	/** Yaw of the character this frame */
-	float CharacterYaw;
+	/** Yaw of the character this frame only updated when standing still and not in air*/
+	float TIPCharacterYaw;
 
-	/** Yaw of the character the previous frame */
-	float CharacterYawLastFrame;
+	/** Yaw of the character the previous frame only updated when standing still and not in air */
+	float TIPCharacterYawLastFrame;
 
 	/** Offset between the character yaw and yaw last frame */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateAccess = "true"))
@@ -79,4 +94,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateAccess = "true"))
 	bool bReloading;
 
+	/** Offset state used to determine which aim offset to use */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateAccess = "true"))
+	EOffsetState OffsetState;
+
+	/** Character yaw this frame */
+	float CharacterYaw;
+
+	/** Character yaw last frame */
+	float CharacterYawLastFrame;
+
+	/** Yaw delta used for leaning in the running blendspace */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Lean", meta = (AllowPrivateAccess = "true"))
+	float YawDelta;
 };
