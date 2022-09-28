@@ -7,6 +7,8 @@
 #include "Components/SphereComponent.h"
 #include "ShooterCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AItem::AItem():
@@ -21,7 +23,8 @@ AItem::AItem():
 	bInterping(false),
 	ItemInterpX(0.f),
 	ItemInterpY(0.f),
-	InterpInitialYawOffset(0.f)
+	InterpInitialYawOffset(0.f),
+	ItemType(EItemType::EIT_Max)
 {
 
 
@@ -298,6 +301,12 @@ void AItem::StartItemCurve(AShooterCharacter* Char)
 {
 	// Store a handle to the character
 	Character = Char;
+
+	if (PickupSound)
+	{
+		UGameplayStatics::PlaySound2D(this, PickupSound);
+	}
+
 	// Store initial location of the item
 	ItemInterpStartLocation = GetActorLocation();
 	bInterping = true;

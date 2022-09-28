@@ -97,6 +97,27 @@ AShooterCharacter::AShooterCharacter() :
 	// Create hand scene component 
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 
+	// Create interp components
+	WeaponInterpComp = CreateAbstractDefaultSubobject<USceneComponent>(TEXT("WeaponInterpComp"));
+	WeaponInterpComp->SetupAttachment(GetFollowCamera());
+
+	InterpComp1 = CreateDefaultSubobject<USceneComponent>(TEXT("InterpComp1"));
+	InterpComp1->SetupAttachment(GetFollowCamera());
+
+	InterpComp2 = CreateDefaultSubobject<USceneComponent>(TEXT("InterpComp2"));
+	InterpComp2->SetupAttachment(GetFollowCamera());
+
+	InterpComp3 = CreateDefaultSubobject<USceneComponent>(TEXT("InterpComp3"));
+	InterpComp3->SetupAttachment(GetFollowCamera());
+
+	InterpComp4 = CreateDefaultSubobject<USceneComponent>(TEXT("InterpComp4"));
+	InterpComp4->SetupAttachment(GetFollowCamera());
+
+	InterpComp5 = CreateDefaultSubobject<USceneComponent>(TEXT("InterpComp5"));
+	InterpComp5->SetupAttachment(GetFollowCamera());
+
+	InterpComp6 = CreateDefaultSubobject<USceneComponent>(TEXT("InterpComp6"));
+	InterpComp6->SetupAttachment(GetFollowCamera());
 }
 
 // Called when the game starts or when spawned
@@ -116,6 +137,9 @@ void AShooterCharacter::BeginPlay()
 	InitialiseAmmoMap();
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+
+	// Create Finterplocation structs for each interp location. Add to array
+	InitialiseInterpLocations();
 	
 }
 
@@ -509,10 +533,6 @@ void AShooterCharacter::SelectButtonPressed()
 	{
 		TraceHitItem->StartItemCurve(this);
 
-		if (TraceHitItem->GetPickupSound())
-		{
-			UGameplayStatics::PlaySound2D(this, TraceHitItem->GetPickupSound());
-		}
 	}
 
 }
@@ -795,6 +815,31 @@ void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 	Ammo->Destroy();
 }
 
+void AShooterCharacter::InitialiseInterpLocations()
+{
+
+	FInterpLocation WeaponLocation{ WeaponInterpComp, 0 };
+	InterpLocations.Add(WeaponLocation);
+
+	FInterpLocation InterpLoc1{ InterpComp1, 0 };
+	InterpLocations.Add(InterpLoc1);
+
+	FInterpLocation InterpLoc2{ InterpComp2, 0 };
+	InterpLocations.Add(InterpLoc2);
+
+	FInterpLocation InterpLoc3{ InterpComp3, 0 };
+	InterpLocations.Add(InterpLoc3);
+
+	FInterpLocation InterpLoc4{ InterpComp4, 0 };
+	InterpLocations.Add(InterpLoc4);
+
+	FInterpLocation InterpLoc5{ InterpComp5, 0 };
+	InterpLocations.Add(InterpLoc5);
+
+	FInterpLocation InterpLoc6{ InterpComp6, 0 };
+	InterpLocations.Add(InterpLoc6);
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -896,4 +941,14 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 	{
 		PickupAmmo(Ammo);
 	}
+}
+
+FInterpLocation AShooterCharacter::GetInterpLocation(int32 Index)
+{
+	if (Index <= InterpLocations.Num())
+	{
+		return InterpLocations[Index];
+	}
+
+	return FInterpLocation();
 }

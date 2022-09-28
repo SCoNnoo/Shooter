@@ -29,6 +29,15 @@ enum class EItemState : uint8
 	EIS_Max UMETA(DisplayName = "DefaultMax")
 };
 
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	EIT_Ammo UMETA(DisplayName = "Ammo"),
+	EIT_Weapon UMETA(DisplayName = "Weapon"),
+
+	EIT_Max UMETA(DisplayName = "DefaultMax")
+};
+
 UCLASS()
 class SHOOTER_API AItem : public AActor
 {
@@ -148,6 +157,10 @@ private:
 	/** Sound played when item is equipped */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	USoundCue* EquippedSound;
+
+	/** Enum for the type of the item this item is */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemType ItemType;
 
 public:
 
