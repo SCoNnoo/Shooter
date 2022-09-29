@@ -71,9 +71,18 @@ protected:
 	/** Handles item interping when in the equip interping state */
 	void ItemInterp(float DeltaTime);
 
+	/** Get interp location based on item type */
+	FVector GetInterpLocation();
+
+	void PlayPickupSound();
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	// Called in AShooterCharacter::Getpickupitem
+	void PlayEquipSound();
 
 private:
 
@@ -161,6 +170,10 @@ private:
 	/** Enum for the type of the item this item is */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	EItemType ItemType;
+
+	/** Index of the interp location this item is interping to */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 InterpLocIndex;
 
 public:
 

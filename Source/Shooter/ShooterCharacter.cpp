@@ -67,7 +67,12 @@ AShooterCharacter::AShooterCharacter() :
 	CrouchingCapsuleHalfHeight(44.f),
 	BaseGroundFriction(2.f),
 	CrouchingGroundFritcion(100.f),
-	bAimingButtonPressed(false)
+	bAimingButtonPressed(false),
+	// Pickupsound timer
+	bShouldPlayPickupSound(true),
+	bShouldPlayEquipSound(true),
+	PickupSoundResetTime(0.2f),
+	EquipSoundResetTime(0.2f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -840,6 +845,44 @@ void AShooterCharacter::InitialiseInterpLocations()
 	InterpLocations.Add(InterpLoc6);
 }
 
+int32 AShooterCharacter::GetInterpLocationIndex()
+{
+	int32 LowestIndex = 1;
+	int32 LowestCount = INT_MAX;
+	for (int32 i = 1; i < InterpLocations.Num(); i++)
+	{
+		if (InterpLocations[i].ItemCount < LowestCount)
+		{
+			LowestIndex = i;
+			LowestCount = InterpLocations[i].ItemCount;
+		}
+	}
+
+	return LowestIndex;
+}
+
+void AShooterCharacter::IncrementInterpLocItemCount(int32 Index, int32 Amount)
+{
+	if (Amount < -1 || Amount > 1) return;
+
+	if (InterpLocations.Num() >= Index)
+	{
+		InterpLocations[Index].ItemCount += Amount;
+	}
+}
+
+void AShooterCharacter::StartPickupSoundTimer()
+{
+	bShouldPlayPickupSound = false;
+	GetWorldTimerManager().SetTimer(PickupSoundTimer, this, &AShooterCharacter::ResetPickupSoundTimer, PickupSoundResetTime);
+}
+
+void AShooterCharacter::StartEquipSoundTimer()
+{
+	bShouldPlayEquipSound = false;
+	GetWorldTimerManager().SetTimer(PickupSoundTimer, this, &AShooterCharacter::ResetEquipSoundTimer, EquipSoundResetTime);
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -895,6 +938,16 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 }
 
+void AShooterCharacter::ResetPickupSoundTimer()
+{
+	bShouldPlayPickupSound = true;
+}
+
+void AShooterCharacter::ResetEquipSoundTimer()
+{
+	bShouldPlayEquipSound = true;
+}
+
 float AShooterCharacter::GetCrosshairSpreadMultiplier() const
 {
 	return CrosshairSpreadMultiplier;
@@ -914,21 +967,18 @@ void AShooterCharacter::IncrementOverllapedItemCount(int8 Amount)
 	}
 }
 
-FVector AShooterCharacter::GetCameraInterpLocation()
+/*FVector AShooterCharacter::GetCameraInterpLocation()
 {
 	const FVector CameraWorldLocation{ FollowCamera->GetComponentLocation() };
 	const FVector CameraForward{ FollowCamera->GetForwardVector() };
 	// Desired = CameraWorldLocation + Forward * A + Up + B
 
 	return CameraWorldLocation + CameraForward * CameraInterpDistance + FVector(0.f, 0.f, CameraInterpEvelvation);
-}
+}*/
 
 void AShooterCharacter::GetPickupItem(AItem* Item)
 {
-	if (Item->GetEquippedSound())
-	{
-		UGameplayStatics::PlaySound2D(this, Item->GetEquippedSound());
-	}
+	Item->PlayEquipSound();
 
 	auto Weapon = Cast<AWeapon>(Item);
 	if (Weapon)

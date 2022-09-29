@@ -24,7 +24,8 @@ AItem::AItem():
 	ItemInterpX(0.f),
 	ItemInterpY(0.f),
 	InterpInitialYawOffset(0.f),
-	ItemType(EItemType::EIT_Max)
+	ItemType(EItemType::EIT_Max),
+	InterpLocIndex(0)
 {
 
 
@@ -219,6 +220,8 @@ void AItem::FinishInterping()
 	bInterping = false;
 	if (Character)
 	{
+		// Subtract 1 from the item count of the interp location sturct
+		Character->IncrementInterpLocItemCount(InterpLocIndex, -1);
 		Character->GetPickupItem(this);
 	}
 	// Set scale back to normal
@@ -240,7 +243,7 @@ void AItem::ItemInterp(float DeltaTime)
 		FVector ItemLocation = ItemInterpStartLocation;
 
 		// Get location in front of the camera 
-		const FVector CameraInterpLocation{ Character->GetCameraInterpLocation() };
+		const FVector CameraInterpLocation{ GetInterpLocation()};
 
 		// Vector from item to camera interp location, X and Y are zeroed out
 		const FVector ItemToCamera{ FVector(0.f,0.f,(CameraInterpLocation - ItemLocation).Z) };
@@ -281,6 +284,53 @@ void AItem::ItemInterp(float DeltaTime)
 
 }
 
+FVector AItem::GetInterpLocation()
+{
+	if (Character == nullptr) return FVector(0.f);
+	switch (ItemType)
+	{
+	case EItemType::EIT_Ammo:
+		return Character->GetInterpLocation(InterpLocIndex).SceneComponent->GetComponentLocation();
+		break;
+	case EItemType::EIT_Weapon:
+		return Character->GetInterpLocation(0).SceneComponent->GetComponentLocation();
+		break;
+	default:
+		break;
+	}
+	return FVector();
+}
+
+void AItem::PlayPickupSound()
+{
+	if (Character)
+	{
+		if (Character->ShouldPlayPickupSound())
+		{
+			Character->StartPickupSoundTimer();
+			if (PickupSound)
+			{
+				UGameplayStatics::PlaySound2D(this, PickupSound);
+			}
+		}
+	}
+}
+
+void AItem::PlayEquipSound()
+{
+	if (Character)
+	{
+		if (Character->ShouldPlayEquipSound())
+		{
+			Character->StartEquipSoundTimer();
+			if (EquippedSound)
+			{
+				UGameplayStatics::PlaySound2D(this, EquippedSound);
+			}
+		}
+	}
+}
+
 // Called every frame
 void AItem::Tick(float DeltaTime)
 {
@@ -302,10 +352,12 @@ void AItem::StartItemCurve(AShooterCharacter* Char)
 	// Store a handle to the character
 	Character = Char;
 
-	if (PickupSound)
-	{
-		UGameplayStatics::PlaySound2D(this, PickupSound);
-	}
+	// Get array index in interp location with the lowest item count
+	InterpLocIndex = Character->GetInterpLocationIndex();
+	// Add 1 to the item count for this interp location struct
+	Character->IncrementInterpLocItemCount(InterpLocIndex, 1);
+
+	PlayPickupSound();
 
 	// Store initial location of the item
 	ItemInterpStartLocation = GetActorLocation();
