@@ -76,6 +76,13 @@ protected:
 
 	void PlayPickupSound();
 
+	virtual void InitialiseCustomDepth();
+
+	virtual void OnConstruction(const FTransform& Transform);
+
+	void EnableGlowMaterial();
+
+	void DisableGlowMaterial();
 
 public:	
 	// Called every frame
@@ -175,6 +182,16 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	int32 InterpLocIndex;
 
+	/** Index for the matieral we'd like to change at runtime */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 MaterialIndex;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UMaterialInstanceDynamic* DynamicMaterialInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstance;
+
 public:
 
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
@@ -196,5 +213,8 @@ public:
 	FORCEINLINE USoundCue* GetEquippedSound() const { return EquippedSound; }
 
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
+
+	virtual void EnableCustomDepth();
+	virtual void DisableCustomDepth();
 
 };

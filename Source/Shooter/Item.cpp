@@ -25,7 +25,8 @@ AItem::AItem():
 	ItemInterpY(0.f),
 	InterpInitialYawOffset(0.f),
 	ItemType(EItemType::EIT_Max),
-	InterpLocIndex(0)
+	InterpLocIndex(0),
+	MaterialIndex(0)
 {
 
 
@@ -67,6 +68,8 @@ void AItem::BeginPlay()
 
 	// Set item properties based on ItemState
 	SetItemProperties(ItemState);
+
+	InitialiseCustomDepth();
 }
 
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -226,6 +229,8 @@ void AItem::FinishInterping()
 	}
 	// Set scale back to normal
 	SetActorScale3D(FVector(1.f));
+	DisableGlowMaterial();
+	DisableCustomDepth();
 }
 
 void AItem::ItemInterp(float DeltaTime)
@@ -313,6 +318,47 @@ void AItem::PlayPickupSound()
 				UGameplayStatics::PlaySound2D(this, PickupSound);
 			}
 		}
+	}
+}
+
+void AItem::EnableCustomDepth()
+{
+	ItemMesh->SetRenderCustomDepth(true);
+}
+
+void AItem::DisableCustomDepth()
+{
+	ItemMesh->SetRenderCustomDepth(false);
+}
+
+void AItem::InitialiseCustomDepth()
+{
+	DisableCustomDepth();
+}
+
+void AItem::OnConstruction(const FTransform& Transform)
+{
+	if (MaterialInstance)
+	{
+		DynamicMaterialInstance = UMaterialInstanceDynamic::Create(MaterialInstance, this);
+		ItemMesh->SetMaterial(MaterialIndex, DynamicMaterialInstance);
+	}
+	EnableGlowMaterial();
+}
+
+void AItem::EnableGlowMaterial()
+{
+	if (DynamicMaterialInstance)
+	{
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("GlowBlendAlpha"), 0);
+	}
+}
+
+void AItem::DisableGlowMaterial()
+{
+	if (DynamicMaterialInstance)
+	{
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("GlowBlendAlpha"), 1);
 	}
 }
 
